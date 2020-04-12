@@ -13,8 +13,10 @@ import (
 	"io"
 
 	"github.com/go-spatial/geom"
-	"github.com/go-spatial/geom/encoding/wkb/internal/consts"
+	"github.com/go-spatial/geom/encoding/consts"
+	"github.com/go-spatial/geom/encoding/common/byteordertype"
 	"github.com/go-spatial/geom/encoding/wkb/internal/decode"
+	"github.com/go-spatial/geom/encoding/common/baseencoder"
 	"github.com/go-spatial/geom/encoding/wkb/internal/encode"
 )
 
@@ -47,7 +49,7 @@ func DecodeBytes(b []byte) (geo geom.Geometry, err error) {
 // Decode will attempt to decode a geometry encoded as WKB into a geom.Geometry.
 func Decode(r io.Reader) (geo geom.Geometry, err error) {
 
-	bom, typ, err := decode.ByteOrderType(r)
+	bom, typ, err := byteordertype.ByteOrderType(r)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +93,7 @@ func Encode(w io.Writer, g geom.Geometry) error {
 }
 
 func EncodeWithByteOrder(byteOrder binary.ByteOrder, w io.Writer, g geom.Geometry) error {
-	en := encode.Encoder{W: w, ByteOrder: byteOrder}
+	en := encode.Encoder{Be: &baseencoder.BaseEncoder{W: w, ByteOrder: byteOrder}}
 	en.Geometry(g)
 	return en.Err()
 }

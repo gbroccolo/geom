@@ -2,48 +2,13 @@ package decode
 
 import (
 	"encoding/binary"
-	"fmt"
 	"io"
 
 	"github.com/go-spatial/geom"
-	"github.com/go-spatial/geom/encoding/wkb/internal/consts"
+	"github.com/go-spatial/geom/encoding/common/byteordertype"
+	"github.com/go-spatial/geom/encoding/common/errinvalidtype"
+	"github.com/go-spatial/geom/encoding/consts"
 )
-
-type ErrBadBOM byte
-
-func (e ErrBadBOM) Error() string { return "decode: bad byte order marker" }
-
-type ErrInvalidType struct {
-	// In which collection type was the invalide type found.
-	Primary string
-	Type    uint32
-}
-
-func (e ErrInvalidType) Error() string {
-	return fmt.Sprintf("decode: invalid type for %v", e.Primary)
-}
-
-func ByteOrderType(r io.Reader) (byteOrder binary.ByteOrder, typ uint32, err error) {
-	var bom = make([]byte, 1, 1)
-	// the bom is the first byte
-	if _, err = r.Read(bom); err != nil {
-		return byteOrder, typ, err
-	}
-
-	// the bom should be either 0 or 1
-	switch bom[0] {
-	case 0:
-		byteOrder = binary.BigEndian
-	case 1:
-		byteOrder = binary.LittleEndian
-	default:
-		return byteOrder, typ, ErrBadBOM(bom[0])
-	}
-
-	// Reading the type which is 4 bytes
-	err = binary.Read(r, byteOrder, &typ)
-	return byteOrder, typ, err
-}
 
 func Point(r io.Reader, bom binary.ByteOrder) (pt geom.Point, err error) {
 	err = binary.Read(r, bom, &pt)
@@ -59,12 +24,12 @@ func MultiPoint(r io.Reader, bom binary.ByteOrder) (pts geom.MultiPoint, err err
 	pts = make([][2]float64, num)
 	for i := range pts {
 
-		bom, typ, err = ByteOrderType(r)
+		bom, typ, err = byteordertype.ByteOrderType(r)
 		if err != nil {
 			return pts, err
 		}
 		if typ != consts.Point {
-			return pts, ErrInvalidType{"multipoint", typ}
+			return pts, errinvalidtype.ErrInvalidType{"multipoint", typ}
 		}
 		err = binary.Read(r, bom, &pts[i])
 		if err != nil {
@@ -95,12 +60,12 @@ func MultiLineString(r io.Reader, bom binary.ByteOrder) (lns geom.MultiLineStrin
 	}
 	lns = make([][][2]float64, num)
 	for i := range lns {
-		bom, typ, err := ByteOrderType(r)
+		bom, typ, err := byteordertype.ByteOrderType(r)
 		if err != nil {
 			return lns, err
 		}
 		if typ != consts.LineString {
-			return lns, ErrInvalidType{"multilinestring", typ}
+			return lns, errinvalidtype.ErrInvalidType{"multilinestring", typ}
 		}
 		if lns[i], err = LineString(r, bom); err != nil {
 			return lns, err
@@ -151,12 +116,12 @@ func MultiPolygon(r io.Reader, bom binary.ByteOrder) (plys geom.MultiPolygon, er
 	}
 	plys = make([][][][2]float64, num)
 	for i := range plys {
-		bom, typ, err := ByteOrderType(r)
+		bom, typ, err := byteordertype.ByteOrderType(r)
 		if err != nil {
 			return plys, err
 		}
 		if typ != consts.Polygon {
-			return plys, ErrInvalidType{"multipolygon", typ}
+			return plys, errinvalidtype.ErrInvalidType{"multipolygon", typ}
 		}
 		if plys[i], err = Polygon(r, bom); err != nil {
 			return plys, err
@@ -172,7 +137,7 @@ func Collection(r io.Reader, bom binary.ByteOrder) (col geom.Collection, err err
 	}
 	col = make(geom.Collection, num)
 	for i := range col {
-		bom, typ, err := ByteOrderType(r)
+		bom, typ, err := byteordertype.ByteOrderType(r)
 		if err != nil {
 			return col, err
 		}
@@ -192,7 +157,7 @@ func Collection(r io.Reader, bom binary.ByteOrder) (col geom.Collection, err err
 		case consts.Collection:
 			col[i], err = Collection(r, bom)
 		default:
-			err = ErrInvalidType{"collection", typ}
+			err = errinvalidtype.ErrInvalidType{"collection", typ}
 		}
 		if err != nil {
 			return col, err
