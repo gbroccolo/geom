@@ -1,0 +1,44 @@
+desc: Simple Point in WGS84 projection
+expected: 4326 1,2
+bytes:{{
+//01 02 03 04 05 06 07 08
+  01                      // Byte order Marker little
+  01 00 00 20             // Type 1 Point
+  E6 10 00 00             // SRID WGS84 (4326)
+  00 00 00 00 00 00 F0 3F // x 1
+  00 00 00 00 00 00 00 40 // y 2
+}}
+
+desc: 4D Point in WGS84 projection
+expected: 4326 1,2,3,4
+bytes:{{
+//01 02 03 04 05 06 07 08
+  01                      // Byte order Marker little
+  01 00 00 E0             // Type 1 Point
+  E6 10 00 00             // SRID WGS84 (4326)
+  00 00 00 00 00 00 F0 3F // x 1
+  00 00 00 00 00 00 00 40 // y 2
+  00 00 00 00 00 00 08 40 // z 3
+  00 00 00 00 00 00 10 40 // m 4
+}}
+
+desc: Simple LineString with two points
+bom: little
+expected: 4326 ( 1,2 3,4 )
+
+bytes:{{
+//01 02 03 04 05 06 07 08
+  01                      // Byte order Marker little
+  04 00 00 20             // Type 4 Multipoint
+  E6 10 00 00             // SRID WGS84 (4326)
+  02 00 00 00             // number of points
+  01                      // Byte Order Marker little
+  01 00 00 00             // Type 1 Point
+  00 00 00 00 00 00 F0 3F // x 1
+  00 00 00 00 00 00 00 40 // y 2
+  01                      // Byte Order Marker little
+  01 00 00 00             // Type 1 Point
+  00 00 00 00 00 00 08 40 // x 3
+  00 00 00 00 00 00 10 40 // y 4
+}}
+ 

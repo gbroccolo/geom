@@ -1,0 +1,34 @@
+desc: Simple LineString with two 3DZ points in WGS84 projection
+bom: big
+geometry: 4326 [ 1,2,3 3,2,1 ]
+
+bytes:{{
+//01 02 03 04 05 06 07 08
+  00                      // Byte order Marker little
+  A0 00 00 02             // Type 2 LineString
+  00 00 10 E6             // SRID WGS84 (4326)
+  00 00 00 02             // number of points
+  00 00 00 00 00 00 F0 3F // x 1
+  00 00 00 00 00 00 00 40 // y 2
+  00 00 00 00 00 00 08 40 // z 3
+  00 00 00 00 00 00 08 40 // x 3
+  00 00 00 00 00 00 00 40 // y 2
+  00 00 00 00 00 00 F0 3F // z 1
+}}
+
+desc: Simple LineString with two 3DZ points
+bom: little
+geometry: [ 1,2,3 3,2,1 ]
+
+bytes:{{
+//01 02 03 04 05 06 07 08
+  01                      // Byte order Marker little
+  02 00 00 08             // Type 2 LineString
+  02 00 00 00             // number of points
+  00 00 00 00 00 00 F0 3F // x 1
+  00 00 00 00 00 00 00 40 // y 2
+  00 00 00 00 00 00 08 40 // z 3
+  00 00 00 00 00 00 08 40 // x 3
+  00 00 00 00 00 00 00 40 // y 2
+  00 00 00 00 00 00 F0 3F // z 1
+}}
